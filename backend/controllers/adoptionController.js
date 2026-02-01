@@ -15,7 +15,14 @@ exports.applyAdoption = async (req, res) => {
     const exists = await Adoption.findOne({ user: userId, pet: pet._id });
     if (exists) return res.status(400).json({ msg: "Already applied" });
 
-    const adoption = await Adoption.create({ user: userId, pet: pet._id });
+    const adoption = await Adoption.create({ 
+      user: userId, 
+      pet: pet._id, 
+      status: "pending" 
+    });
+
+    // Update pet status to pending to prevent multiple applications
+    await Pet.findByIdAndUpdate(pet._id, { status: "pending" });
 
     res.status(201).json({
       msg: "Adoption application submitted successfully",
@@ -30,21 +37,54 @@ exports.applyAdoption = async (req, res) => {
 exports.getMyApplications = async (req, res) => {
   try {
     const { userId } = req.user;
+    const { page = 1, limit = 8, search, status } = req.query;
+    const skip = (page - 1) * limit;
 
-    const apps = await Adoption.find({ user: userId }).populate("pet");
+    // Build query
+    const query = { user: userId };
+    if (status) query.status = status;
+
+    // Build search filter for pet name or breed
+    let searchFilter = {};
+    if (search) {
+      searchFilter = {
+        $or: [
+          { 'pet.name': { $regex: search, $options: 'i' } },
+          { 'pet.breed': { $regex: search, $options: 'i' } }
+        ]
+      };
+    }
+
+    const apps = await Adoption.find({ ...query, ...searchFilter })
+      .populate("pet")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Adoption.countDocuments({ ...query, ...searchFilter });
 
     res.json({
       msg: "Your adoption applications fetched successfully",
-      count: apps.length,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / limit),
       data: apps.map(app => {
         const { _id: id, status, createdAt: appliedAt, pet } = app;
-        const { _id: petId, name, species, breed, status: petStatus } = pet;
+        const { _id: petId, name, species, breed, age, color, description, image, status: petStatus } = pet;
 
         return {
-          id,
-          pet: { id: petId, name, species, breed, status: petStatus },
-          status,
-          appliedAt
+          _id: petId, // Use pet ID as the main ID for frontend
+          name,
+          species,
+          breed,
+          age,
+          color,
+          description,
+          photo: image, // Map image to photo for frontend consistency
+          status, // Use adoption status (pending/approved/rejected)
+          petStatus, // Keep pet status for reference
+          appliedAt,
+          adoptionId: id // Keep adoption application ID
         };
       })
     });
@@ -56,18 +96,43 @@ exports.getMyApplications = async (req, res) => {
 // Get all adoption applications (Admin)
 exports.getAllApplications = async (req, res) => {
   try {
-    const apps = await Adoption.find().populate("pet user");
+    const { page = 1, limit = 8, search, status } = req.query;
+    const skip = (page - 1) * limit;
+
+    // Build query
+    const query = {};
+    if (status) query.status = status;
+
+    const apps = await Adoption.find(query)
+      .populate("pet user")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    // Filter applications after populating (for search)
+    let filteredApps = apps;
+    if (search) {
+      const searchRegex = new RegExp(search, 'i');
+      filteredApps = apps.filter(app => 
+        (app.pet && app.pet.name && app.pet.name.match(searchRegex)) ||
+        (app.user && app.user.email && app.user.email.match(searchRegex))
+      );
+    }
+
+    const total = await Adoption.countDocuments(query);
 
     res.json({
       msg: "All adoption applications fetched successfully",
-      count: apps.length,
-      data: apps.map(app => {
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / limit),
+      data: filteredApps.map(app => {
         const { _id: id, status, createdAt: appliedAt, pet, user } = app;
-        const { _id: petId, name: petName, species, breed, status: petStatus } = pet;
-        const { _id: userId, name: userName, email } = user;
+        const { _id: petId, name: petName, species, breed, status: petStatus } = pet || {};
+        const { _id: userId, name: userName, email } = user || {};
 
         return {
-          id,
+          _id: id,
           user: { id: userId, name: userName, email },
           pet: { id: petId, name: petName, species, breed, status: petStatus },
           status,
@@ -76,6 +141,7 @@ exports.getAllApplications = async (req, res) => {
       })
     });
   } catch (err) {
+    console.error("Error in getAllApplications:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -94,6 +160,8 @@ exports.updateStatus = async (req, res) => {
 
     if (status === "approved") {
       await Pet.findByIdAndUpdate(adoption.pet, { status: "adopted" });
+    } else if (status === "rejected") {
+      await Pet.findByIdAndUpdate(adoption.pet, { status: "available" });
     }
 
     const updatedAdoption = await Adoption.findById(id).populate("pet user");

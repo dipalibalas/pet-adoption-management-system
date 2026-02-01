@@ -8,7 +8,7 @@ const petSchema = new mongoose.Schema({
   color: { type: String },
   description: { type: String },
   image: { type: String },
-  status: { type: String, enum: ["available", "adopted"], default: "available" }
+  status: { type: String, enum: ["available", "pending", "adopted"], default: "available" }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Pet", petSchema);
