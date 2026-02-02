@@ -15,57 +15,94 @@ const Registeration = () => {
     role: "user",
   });
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
   const [popup, setPopup] = useState({ open: false, message: "", severity: "info" });
 
-  const validate = () => {
-    const tempErrors = {};
-    if (!formData.name.trim()) tempErrors.name = "Name is required";
-    if (!formData.email) tempErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) tempErrors.email = "Email is invalid";
-    if (!formData.password) tempErrors.password = "Password is required";
-    else if (formData.password.length < 6)
-      tempErrors.password = "Password must be at least 6 characters";
-    if (formData.password !== formData.confirmPassword)
-      tempErrors.confirmPassword = "Passwords do not match";
-    if (!formData.role) tempErrors.role = "Role is required";
+  // Field-level real-time validation
+const validateField = (name, value) => {
+  // Create updated formData with new value FIRST
+  const updatedFormData = { ...formData, [name]: value };
+  const tempErrors = { ...errors };
+  
+  switch (name) {
+    case "name":
+      if (!value.trim()) tempErrors.name = "Name is required";
+      else delete tempErrors.name;
+      break;
+      
+    case "email":
+      if (!updatedFormData.email) tempErrors.email = "Email is required";
+      else if (!/\S+@\S+\.\S+/.test(updatedFormData.email))
+        tempErrors.email = "Email is invalid";
+      else delete tempErrors.email;
+      break;
+      
+    case "password":
+      if (!updatedFormData.password) tempErrors.password = "Password is required";
+      else if (updatedFormData.password.length < 6)
+        tempErrors.password = "Password must be at least 6 characters";
+      else delete tempErrors.password;
+      break;
+      
+    case "confirmPassword":
+      if (updatedFormData.password !== value)
+        tempErrors.confirmPassword = "Passwords do not match";
+      else delete tempErrors.confirmPassword;
+      break;
+      
+    case "role":
+      if (!value) tempErrors.role = "Role is required";
+      else delete tempErrors.role;
+      break;
+  }
+  
+  setErrors(tempErrors);
+};
 
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
-  };
 
+  // const validate = () => {
+  //   const tempErrors = {};
+  
+  //   if (!formData.name?.trim()) tempErrors.name = "Name is required";
+  //   if (!formData.email) tempErrors.email = "Email is required";
+  //   else if (!/\S+@\S+\.\S+/.test(formData.email)) tempErrors.email = "Email is invalid";
+  //   if (!formData.password) tempErrors.password = "Password is required";
+  //   else if (formData.password.length < 6)
+  //     tempErrors.password = "Password must be at least 6 characters";
+  //   if (formData.password !== formData.confirmPassword)
+  //     tempErrors.confirmPassword = "Passwords do not match";
+  //   if (!formData.role) tempErrors.role = "Role is required";
+
+  //   setErrors(tempErrors);
+  //   return Object.keys(tempErrors).length === 0;
+  // };
+
+  //  FIXED: Only update data + validate, don't clear errors
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    
+    if (serverError) setServerError("");
+    validateField(name, value); //  Passes fresh value
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    
+    // if (!validate()) return;
+    setServerError("");
 
     try {
       const res = await API.post("/auth/register", formData);
-      console.log("Registration response:", res);
       
       if (res.data && res.data.success) {
         setPopup({ open: true, message: res.data.message || "Registration successful!", severity: "success" });
-        
-        // Clear any existing auth state before redirecting to login
         logout();
-        
         setTimeout(() => navigate("/login"), 1500);
-      } else {
-        setPopup({
-          open: true,
-          message: "Invalid response from server",
-          severity: "error",
-        });
       }
     } catch (error) {
-      console.error("Registration error:", error);
-      setPopup({
-        open: true,
-        message: error?.response?.data?.message || error?.message || "Registration failed",
-        severity: "error",
-      });
+      setServerError(error?.response?.data?.message || "Registration failed");
     }
   };
 
@@ -84,6 +121,7 @@ const Registeration = () => {
                   Join our pet loving community
                 </p>
               </div>
+
             {/* Name Field */}
             <div className="space-y-1">
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -232,14 +270,9 @@ const Registeration = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={!formData.name || !formData.email || !formData.password || !formData.confirmPassword || !formData.role}
+              // disabled={!formData.name || !formData.email || !formData.password || !formData.confirmPassword || !formData.role || formData.password.length < 6 || formData.password !== formData.confirmPassword}
               className="group relative w-full flex justify-center py-3 sm:py-4 px-4 border border-transparent text-sm font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-500/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:from-gray-400 disabled:to-gray-500 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
             >
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </span>
               Create Account
             </button>
                 {/* Login Link */}

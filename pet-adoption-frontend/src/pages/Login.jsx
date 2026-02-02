@@ -9,50 +9,78 @@ const Login = () => {
   const { login } = useAuth();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
   const [popup, setPopup] = useState({ open: false, message: "", severity: "info" });
 
-  const validate = () => {
+  const validateField = (name) => {
     const tempErrors = {};
-    if (!formData.email) tempErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) tempErrors.email = "Email is invalid";
-    if (!formData.password) tempErrors.password = "Password is required";
+    
+    if (name === "email" || !errors.password) {
+      if (!formData.email) tempErrors.email = "Email is required";
+      else if (!/\S+@\S+\.\S+/.test(formData.email))
+        tempErrors.email = "Enter a valid email";
+    }
+    
+    if (name === "password" || !errors.email) {
+      if (!formData.password) tempErrors.password = "Password is required";
+      else if (formData.password.length < 6)
+        tempErrors.password = "Password must be at least 6 characters";
+    }
+    
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const validate = () => {
+    const tempErrors = {};
+  
+    if (!formData.email) tempErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email))
+      tempErrors.email = "Enter a valid email";
+    
+    if (!formData.password) tempErrors.password = "Password is required";
+    else if (formData.password.length < 6)
+      tempErrors.password = "Password must be at least 6 characters";
+    
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
+
+  // ✅ FIXED: Only update form data, don't clear errors here
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    
+    // Clear server error only
+    if (serverError) setServerError("");
+    
+    // Validate field in real-time (errors will show immediately)
+    validateField(name, value);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // ✅ Validate entire form
     if (!validate()) return;
-
+    
+    setServerError("");
+    
     try {
       const res = await API.post("/auth/login", formData);
-   
-      if(res && res.data){
-        const {data} = res.data
+      
+      if (res && res.data) {
+        const { data } = res.data;
         login(data?.token, data?.user);
-        setPopup({ open: true, message: "Login successful!", severity: "success" }); 
+        setPopup({ open: true, message: "Login successful!", severity: "success" });
+        
         setTimeout(() => {
           if (data?.user?.role === "admin") navigate("/adoption-applications");
           else navigate("/my-applications");
         }, 1000);
-      } else {
-        console.error("Invalid response structure:", res);
-        setPopup({
-          open: true,
-          message: "Invalid response from server",
-          severity: "error",
-        });
       }
-    
     } catch (error) {
-      console.error("Login error:", error);
-      setPopup({
-        open: true,
-        message: error?.response?.data?.message || error?.message || "Login failed",
-        severity: "error",
-      });
+      setServerError(error?.response?.data?.message || "Login failed");
     }
   };
 
@@ -70,6 +98,18 @@ const Login = () => {
                      Sign in to your account to continue
                 </p>
               </div>
+
+              {/* Server Error Display */}
+              {serverError && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-red-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <p className="text-sm text-red-800 font-medium">{serverError}</p>
+                  </div>
+                </div>
+              )}
           {/* Email Field */}
           <div className="space-y-1">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -120,9 +160,6 @@ const Login = () => {
             />
             {errors.password && (
               <p className="mt-1 text-sm text-red-600 flex items-center">
-                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
                 {errors.password}
               </p>
             )}
@@ -131,14 +168,10 @@ const Login = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={!formData.email || !formData.password}
+            // disabled={!formData.email || !formData.password || formData.password.length < 6}
             className="group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-500/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:from-gray-400 disabled:to-gray-500 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
           >
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            </span>
+            
             Sign In
           </button>
         </form>
