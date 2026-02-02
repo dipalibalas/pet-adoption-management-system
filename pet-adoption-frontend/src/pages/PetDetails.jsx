@@ -23,7 +23,7 @@ const handleAdoption = async () => {
   // Show confirmation popup
   setShowConfirm(true);
 };
-console.log("roel ",isAuthenticated,role)
+console.log("role ",isAuthenticated,role)
   const fetchPet = async () => {
     try {
       const res = await API.get(`/pets/${id}`);
@@ -81,7 +81,7 @@ console.log("roel ",isAuthenticated,role)
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-4 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <button
@@ -96,67 +96,81 @@ console.log("roel ",isAuthenticated,role)
 
         {/* Main Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Hero Image */}
-          <div className="relative">
-            <img
-              src={pet?.photo ? `${BASE_URL}${pet.photo}` : pet?.image ? `${BASE_URL}${pet.image}` : ""}
-              alt={pet.name}
-              className="w-full h-64 sm:h-80 md:h-96 lg:h-[500px] object-cover hover:scale-105 transition-transform duration-300"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-          </div>
-
-          {/* Content */}
-          <div className="p-8 lg:p-12">
-            <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
-              {/* Pet Info */}
-              <div className="lg:w-2/3">
-                <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-                  {pet.name}
-                </h1>
+          <div className="flex flex-col lg:flex-row">
+            {/* Left Side - Image */}
+            <div className="lg:w-1/2 bg-gradient-to-br from-gray-100 to-gray-200">
+              <div className="relative h-64 lg:h-full min-h-[400px]">
+                <img
+                  src={pet?.photo ? `${BASE_URL}${pet.photo}` : pet?.image ? `${BASE_URL}${pet.image}` : ""}
+                  alt={pet.name}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                  <div className="space-y-4">
-                    <div>
-                      <span className="block text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Species</span>
-                      <span className="text-2xl font-semibold text-gray-900">{pet.species}</span>
-                    </div>
-                    <div>
-                      <span className="block text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Breed</span>
-                      <span className="text-xl font-medium text-gray-900">{pet.breed}</span>
-                    </div>
+                {/* Pet Name Overlay on Image */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
+                  <h1 className="text-2xl lg:text-3xl font-bold text-white drop-shadow-lg mb-2">
+                    {pet.name}
+                  </h1>
+                  <div className="flex flex-wrap gap-2">
+                    <span className={`px-3 py-1 backdrop-blur-sm rounded-full text-sm font-medium ${
+                      pet.status === 'available' 
+                        ? 'bg-green-500/90 text-white' 
+                        : pet.status === 'adopted'
+                        ? 'bg-red-500/90 text-white'
+                        : 'bg-gray-500/90 text-white'
+                    }`}>
+                      {pet.status}
+                    </span>
                   </div>
-                  <div className="space-y-4">
-                    <div>
-                      <span className="block text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Age</span>
-                      <span className="text-2xl font-semibold text-gray-900">{pet.age}</span>
-                    </div>
-                    <div>
-                      <span className="block text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Status</span>
-                      <span className={`inline-flex px-4 py-2 rounded-full text-sm font-semibold ${
-                        pet.status === 'available' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {pet.status}
-                      </span>
-                    </div>
-                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side - Details */}
+            <div className="lg:w-1/2 p-6 lg:p-8">
+              {/* Pet Details Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <span className="block text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Species</span>
+                  <span className="text-xl font-semibold text-gray-900">{pet.species}</span>
+                </div>
+                <div>
+                  <span className="block text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Breed</span>
+                  <span className="text-xl font-medium text-gray-900">{pet.breed}</span>
+                </div>
+                <div>
+                  <span className="block text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Age</span>
+                  <span className="text-xl font-semibold text-gray-900">{pet.age}</span>
+                </div>
+                <div>
+                  <span className="block text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Color</span>
+                  <span className="text-xl font-medium text-gray-900">{pet.color || 'N/A'}</span>
+                </div>
+              </div>
+              
+              {/* Description */}
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-3">About {pet.name}</h2>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-gray-700 leading-relaxed">
+                    {pet.description || 'No description available for this pet.'}
+                  </p>
                 </div>
               </div>
 
               {/* Action Button */}
-              <div className="lg:w-1/3 flex flex-col items-center lg:items-end">
+              <div className="mt-auto">
                 {pet.status === "available" && isAuthenticated && role === "user" && (
                   <button
                     onClick={handleAdoption}
-                    className="w-full max-w-md lg:w-auto px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold text-lg rounded-xl shadow-2xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-3xl"
+                    className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold text-base rounded-xl shadow-lg hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 transform hover:-translate-y-1"
                   >
                     Apply for Adoption
                   </button>
-                  
                 )}
+                
                 {/* Confirmation Dialog */}
                 <ConfirmDialog
                   isOpen={showConfirm}
@@ -164,11 +178,6 @@ console.log("roel ",isAuthenticated,role)
                   onCancel={cancelAdoption}
                   petName={pet.name}
                 />
-                {/* {pet.status === "available" && (!isAuthenticated || role !== "user") && (
-                  <div className="w-full max-w-md lg:w-auto px-8 py-4 bg-gray-100 text-gray-500 font-semibold text-lg rounded-xl text-center">
-                    Login as user to apply
-                  </div>
-                )} */}
               </div>
             </div>
           </div>
