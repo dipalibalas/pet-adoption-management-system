@@ -1,14 +1,13 @@
 # Pet Adoption Management System
 
-This is a MERN (MongoDB, Express.js, React.js, Node.js) stack project for a Pet Adoption Web Application. Users can view available pets for adoption, add new pets for adoption, and adopt pets.
+This is a MERN (MongoDB, Express.js, React.js, Node.js) stack project for a Pet Adoption Web Application. Users can view available pets for adoption, and adopt pets. Admin can add new pets for adoption, and approve & reject pet adoption applications.
 
 ## Features
 
-- **User authentication**: Users can sign up, log in, and log out.
-- **CRUD operations**: Users can perform CRUD (Create, Read, Update, Delete) operations on pet listings.
-- **Image upload**: Users can upload images of pets they want to put up for adoption.
-- **Search functionality**: Users can search for pets based on various parameters such as breed, age, etc.
-- **Responsive design**: The application is responsive and works seamlessly on various devices.
+- **User authentication**: Users/Admin can sign up, log in, and log out.
+- **CRUD operations**: Admin can perform CRUD (Create, Read, Update, Delete) operations on pet listings.
+- **Image upload**: Admin can upload images of pets they want to put up for adoption.
+- **Search functionality**: Visitors/Users/Admin can search for pets based on various parameters such as breed, age, etc.
 - **Role-based access**: Admin users can manage all pets and adoption applications.
 - **Adoption applications**: Users can apply for pet adoption and track application status.
 - **Advanced filtering**: Filter pets by species, breed, and age with pagination.
@@ -95,31 +94,8 @@ Open http://localhost:5173 in your browser to view the application.
 - **bcryptjs** - For password hashing
 - **Lucide React** - For icons
 
-## Project Structure
-
-```
-Pet-Adoption-Management-System/
-├── backend/
-│   ├── config/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── models/
-│   ├── routes/
-│   ├── uploads/              # Uploaded pet images
-│   └── server.js
-├── pet-adoption-frontend/
-│   ├── src/
-│   │   ├── api/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── pages/
-│   │   └── App.jsx
-│   └── public/
-└── README.md
-```
 
 ## API Endpoints
-
 ### Authentication
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - User login
@@ -146,14 +122,4 @@ Pet-Adoption-Management-System/
 5. **Apply for Adoption**: Submit adoption applications for pets you're interested in
 6. **Admin Functions**: (Admin users only) Manage pets and review applications
 
-## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License.
