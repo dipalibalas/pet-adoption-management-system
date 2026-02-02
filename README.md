@@ -33,7 +33,7 @@ npm install
 
 #### Frontend Dependencies
 ```bash
-cd ../pet-adoption-frontend
+cd pet-adoption-frontend
 npm install
 ```
 
