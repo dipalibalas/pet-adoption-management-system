@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../api/axiosConfig";
+import { BASE_URL } from "../api/axiosConfig";
 import PopupMessage from "../components/PopupMessage";
 
 const EditPet = () => {
@@ -37,8 +38,8 @@ const EditPet = () => {
           description: pet.description || "",
           status: pet.status || "available",
         });
-        setCurrentImage(pet?.image ? `http://localhost:5000${pet.image}` : pet?.photo ? `http://localhost:5000${pet.photo}` : "");
-        setImagePreview(pet?.image ? `http://localhost:5000${pet.image}` : pet?.photo ? `http://localhost:5000${pet.photo}` : "");
+        setCurrentImage(pet?.image ? `${BASE_URL}${pet.image}` : pet?.photo ? `${BASE_URL}${pet.photo}` : "");
+        setImagePreview(pet?.image ? `${BASE_URL}${pet.image}` : pet?.photo ? `${BASE_URL}${pet.photo}` : "");
       } catch (err) {
         const errorMessage = err.response?.data?.msg || err.message || "Failed to fetch pet details";
         setPopup({ open: true, message: errorMessage, severity: "error" });

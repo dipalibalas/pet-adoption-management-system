@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { BASE_URL } from "../api/axiosConfig";
 import API from "../api/axiosConfig";
 
 const AdminPetCard = ({ pet, onDelete, onUpdate, setPopup }) => {
@@ -42,7 +43,7 @@ const AdminPetCard = ({ pet, onDelete, onUpdate, setPopup }) => {
       {/* Pet Image */}
       <div className="relative h-32 sm:h-40 md:h-48 bg-gradient-to-br from-gray-100 to-gray-200">
         <img
-          src={pet?.photo ? `http://localhost:5000${pet.photo}` : pet?.image ? `http://localhost:5000${pet.image}` : 'https://via.placeholder.com/400x300?text=No+Image'}
+          src={pet?.photo ? `${BASE_URL}${pet.photo}` : pet?.image ? `${BASE_URL}${pet.image}` : 'https://via.placeholder.com/400x300?text=No+Image'}
           alt={pet?.name}
           className="w-full h-full object-cover"
           loading="lazy"

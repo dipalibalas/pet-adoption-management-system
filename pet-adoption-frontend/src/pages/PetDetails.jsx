@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../api/axiosConfig";
+import { BASE_URL } from "../api/axiosConfig";
 import PopupMessage from "../components/PopupMessage";
 import ConfirmDialog from "../components/ConfirmationDialog";
 import { useAuth } from "../context/useAuth";
@@ -98,7 +99,7 @@ console.log("roel ",isAuthenticated,role)
           {/* Hero Image */}
           <div className="relative">
             <img
-              src={pet?.photo ? `http://localhost:5000${pet.photo}` : pet?.image ? `http://localhost:5000${pet.image}` : ""}
+              src={pet?.photo ? `${BASE_URL}${pet.photo}` : pet?.image ? `${BASE_URL}${pet.image}` : ""}
               alt={pet.name}
               className="w-full h-64 sm:h-80 md:h-96 lg:h-[500px] object-cover hover:scale-105 transition-transform duration-300"
               loading="lazy"

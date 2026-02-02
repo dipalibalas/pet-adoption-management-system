@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "../api/axiosConfig";
 
 const UserPetCard = ({ pet }) => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ const UserPetCard = ({ pet }) => {
       {/* Fixed Responsive Image Container */}
       <div className="w-full h-40 sm:h-48 md:h-56 lg:h-64 overflow-hidden bg-gray-200 relative">
         <img
-          src={pet?.photo ? `http://localhost:5000${pet.photo}` : pet?.image ? `http://localhost:5000${pet.image}` : 'https://via.placeholder.com/400x300?text=No+Image'}
+          src={pet?.photo ? `${BASE_URL}${pet.photo}` : pet?.image ? `${BASE_URL}${pet.image}` : 'https://via.placeholder.com/400x300?text=No+Image'}
           alt={pet?.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 hover:brightness-105"
           loading="lazy"

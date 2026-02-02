@@ -1,9 +1,13 @@
 import axios from "axios";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
+
 const API = axios.create({
-  baseURL: "http://localhost:5000/api", // backend URL
+  baseURL: `${BASE_URL}/api`, // API endpoint with base URL
   timeout: 10000, // 10 second timeout
 });
+
+export { BASE_URL };
 
 // Add token interceptor for authenticated requests
 API.interceptors.request.use((req) => {
